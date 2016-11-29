@@ -1,5 +1,5 @@
 <?
-include '../config.php'; 
+include $_SERVER['DOCUMENT_ROOT'].'../config.php'; 
 
 if (isset($_COOKIE['id']) and isset($_COOKIE['hash'])) 
 {
@@ -9,9 +9,13 @@ if (isset($_COOKIE['id']) and isset($_COOKIE['hash']))
 	{
 		setcookie('id', '', time() - 60*24*30*12, '/'); 
 		setcookie('hash', '', time() - 60*24*30*12, '/');
-		header('Location: login.php');
+		header('Location: /auth/login.php');
 		exit();
 	}
 }
-echo "You are logged";
+else
+{
+	header('Location: /auth/login.php');
+	exit();
+}
 ?>

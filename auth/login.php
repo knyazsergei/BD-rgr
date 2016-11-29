@@ -26,8 +26,8 @@ class Cauthorizer
 		$hash = md5($this->CodeGenerator(10)); 
 		mysql_query("UPDATE users SET hash='".$hash."' WHERE id='".$user['id']."'") or die("MySQL Error: " . mysql_error()); 
 
-		setcookie("id", $user['id'], time()+60*60*24*30); 
-		setcookie("hash", $hash, time()+60*60*24*30); 
+		setcookie("id", $user['id'], time()+60*60*24*30, '/'); 
+		setcookie("hash", $hash, time()+60*60*24*30, '/'); 
 
 		echo "You are logged";
 	}

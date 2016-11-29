@@ -1,5 +1,5 @@
 <?
-setcookie('id', '', time() - 60*60*24*30, '/');
-setcookie('hash', '', time() - 60*60*24*30, '/');
-header('Location: login.php'); exit();
+setcookie('id', '',0 ,'/');
+setcookie('hash', '',0 ,'/');
+header('Location: /auth/login.php'); exit();
 ?>
