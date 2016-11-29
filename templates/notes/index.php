@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>Bootstrap 101 Template</title>
+    <title>Valeo</title>
 
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -19,6 +19,9 @@
   </head>
   <body>
     <div class="head">
+        <div class="logo">
+            Valeo
+        </div>
     </div>
     <div class="main">
         <div class="leftColumn">
@@ -29,8 +32,15 @@
         <div class="notes">
             <?
                 $result = $notes->GetList();
+                $used = false;
+                $noteId = 0;
                 while ($note = mysql_fetch_assoc($result))
                 {
+                    if(!$used)
+                    {
+                        $noteId = $note['id'];
+                        $used = true;
+                    }
                     echo '<div class="note" id="'.$note['id'].'">
                 <div class="noteTitle">'.$note['title'].'</div>
                 <div class="shortDescription">'.$note['description'].'</div>
@@ -40,19 +50,21 @@
             <a href="#" id="getContent">Загрузить заметки</a>
         </div>
         </div>  
-        <div class="rightColumn"><?$note = $notes->GetNote(1);?>
+        <div class="rightColumn"><?$note = $notes->GetNote($noteId);?>
             <div class="currentNoteHead">
                 <div class="currentNoteTitle">
                     <?=$note['title']?>
                 </div>
+                <div class="currentTools">
+                    <a href="#" class="trashNote">
+                        <img src="/img/trash.png">
+                    </a>
+                </div> 
                 <div class="currentNoteDate">
                     <?=$note['date']?>
                 </div>
             </div>
-            <textarea class="currentNoteDescritption" wrap="off" placeholder="Начни писать прямо здесь! :)"><?
-            $note = $notes->GetNote(1);
-            echo $note['descritption'];
-            ?></textarea>
+            <textarea class="currentNoteDescritption" wrap="off" placeholder="Начни писать прямо здесь! :)"><?=$note['description']?></textarea>
         </div>
     </div>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
@@ -64,7 +76,7 @@
     <script type="text/javascript">
         $(document).ready(function() {
 
-            var currentNoteId = <?=$note['id']?>;
+            var currentNoteId = <?=$noteId?>;
             var page = 0;
 
             $('.addNote').on('click', function(e)
@@ -85,9 +97,8 @@
                 });
             });
 
-            $('.note').on('click', function(e)
+            function loadNote(id)
             {
-                var id = $(this).attr("id");
                 $.ajax({
                     type: 'POST',
                     dataType: 'json',
@@ -99,7 +110,31 @@
                         currentNoteId = id;
                     }
                 });
+            }
+
+            $('.note').on('click', function(e)
+            {
+                Save(currentNoteId);
+                var id = $(this).attr("id");
+                loadNote(id);
             });
+
+            $('.trashNote').on('click', function(e)
+            {
+                var accuratelyRemove = confirm("Вы уверены, что хотите удалить данную заметку?");
+                if(accuratelyRemove)
+                {
+                    $('.note[id=' + currentNoteId + ']').remove();
+                    $.ajax({
+                        url: 'notes/index.php?action=remove&id=' + currentNoteId,
+                        success: function(){
+                            var id = $('.notes').children().first().attr("id");
+                            loadNote(id);
+                        }
+                    });
+                }
+            });
+            
 
             function removeGetContentButton(button)
             {
@@ -128,17 +163,6 @@
                 return false;
             });
 
-
-            var timeout;
-            $('#ajaxSave').bind('textchange', function () {
-                clearTimeout(timeout);
-                $('#ajaxFired').html('<strong>Typing...</strong>');
-                var self = this;
-                timeout = setTimeout(function () {
-                    $('#ajaxFired').html('<strong>Saved</strong>: ' + $(self).val());
-                }, 1000);
-            });
-
             var timeout;
             $('.currentNoteDescritption').bind('textchange', function () {
                 clearTimeout(timeout);
@@ -147,6 +171,7 @@
             });
 
             function Save(id) {
+                clearTimeout(timeout);
                 $.ajax({
                     type: 'POST',
                     dataType: 'json',
@@ -173,6 +198,14 @@
             background: #507299;
             width:100%;
             height:42px;
+        }
+        .logo 
+        {
+            color: #fff;
+            font-size: 14pt;
+            font-weight: bolder;
+            padding: 8px;
+            text-align: center;
         }
         .main 
         {
@@ -259,6 +292,12 @@
         .currentNoteTitle
         {
             float:left;
+        }
+
+        .currentTools 
+        {
+            float:left;
+            margin: 0 10px;
         }
 
         .currentNoteDate 

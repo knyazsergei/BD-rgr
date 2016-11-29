@@ -79,7 +79,7 @@ class CNotes
 	public function Remove($id)
 	{
 		mysql_query("
-			DELETE * FROM `notes` 
+			DELETE FROM `notes` 
 			WHERE `id`='".$id."'"
 		) or die ("<br>Invalid query: " . mysql_error()); ;
 	}
@@ -107,7 +107,7 @@ if($_GET["action"] == "addNote")
 if($_GET["action"] == "getNote")
 {
 	$note = $notes->GetNote($_GET["id"]);
-	echo json_encode(array('title' => 	$note["title"], 'description' => $note["description"], 'date' => $note["date"]));
+	echo json_encode(array('title' => $note["title"], 'description' => $note["description"], 'date' => $note["date"]));
 }
 
 if($_GET["action"] == "ChangeNoteDescription")
@@ -129,5 +129,8 @@ if($_GET["action"] == "getNotes")
 	
 	echo json_encode($result);
 }
-
+if($_GET["action"] == "remove")
+{
+	$notes->Remove($_GET["id"]);
+}
 ?>
