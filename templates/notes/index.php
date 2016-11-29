@@ -85,8 +85,7 @@
     <script type="text/javascript">
         $(document).ready(function() {
 
-            var currentNoteId = <?=$noteId?>;
-            var currentTitle = "<?=$note['title']?>";
+            var currentNoteId = <?=$note['id']?>;
             var page = 0;
 
             $('.addNote').on('click', function(e)
@@ -109,21 +108,23 @@
 
             function loadNote(id)
             {
-                $.ajax({
-                    type: 'POST',
-                    dataType: 'json',
-                    url: 'notes/index.php?action=getNote&id=' + id ,
-                    success: function(jsondata){
-                        $('.currentNoteTitle').text(jsondata.title);
-                        $('.currentNoteDate').text(jsondata.date);
-                        $('.currentNoteDescritption').val(jsondata.description);
-                        currentNoteId = id;
-                        currentTitle = jsondata.title;
-                    }
-                });
+                if(currentNoteId != id)
+                {
+                    $.ajax({
+                        type: 'POST',
+                        dataType: 'json',
+                        url: 'notes/index.php?action=getNote&id=' + id ,
+                        success: function(jsondata){
+                            $('.currentNoteTitle').text(jsondata.title);
+                            $('.currentNoteDate').text(jsondata.date);
+                            $('.currentNoteDescritption').val(jsondata.description);
+                            currentNoteId = id;
+                        }
+                    });
+                }
             }
 
-            $('.notes').on('click','div', function(e)
+            $('.notes').on('click','.note', function(e)
             {
                Save(currentNoteId);
                 var id = $(this).attr("id");
@@ -192,10 +193,9 @@
 
             $('.currentNoteTitle').on('click', function(e)
             {
-                var title = prompt('Изменить название заметки', currentTitle);
-                currentTitle = title;
+                var title = prompt('Изменить название заметки', $(this).text());
                 $(this).text(title); 
-                $('.note[id=' + currentNoteId + '] .currentNoteTitle').text(title);
+                $('.note[id=' + currentNoteId + ']').children('.noteTitle').text(title);
                 Save(currentNoteId);
             });
 
