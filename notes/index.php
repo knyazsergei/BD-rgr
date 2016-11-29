@@ -12,13 +12,12 @@ class CNotes
 
 	public function GetList($page = 0)
 	{
-		$range[0] = $tpage * $this->m_numberNotesPage;
+		$range[0] = $page * $this->m_numberNotesPage;
 		$range[1] = ($page + 1) * $this->m_numberNotesPage;
-		 
 		$notes = mysql_query("
 			SELECT * FROM `notes` 
 			WHERE `author_id`='".mysql_real_escape_string($this->m_userId)."' 
-			ORDER BY `id` ASC
+			ORDER BY `date` ASC
 			LIMIT ".$range[0].",".$range[1]
 		) or die ("<br>Invalid query: " . mysql_error()); ;
 
@@ -116,4 +115,19 @@ if($_GET["action"] == "ChangeNoteDescription")
 	$description = $_POST["description"];
 	$note = $notes->ChangeNoteDescription($_GET["id"], $description);
 }
+
+if($_GET["action"] == "getNotes")
+{
+	$page = $_GET["page"];
+	$note = $notes->GetList($page);
+
+	$result = array();
+	for($i = 0; $i < mysql_num_rows($note);$i++)
+	{
+		$result[] = mysql_fetch_array($note, MYSQL_ASSOC );
+	}
+	
+	echo json_encode($result);
+}
+
 ?>

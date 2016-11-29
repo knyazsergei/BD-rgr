@@ -37,6 +37,7 @@
             </div>';
                 }
             ?>
+            <a href="#" id="getContent">Загрузить заметки</a>
         </div>
         </div>  
         <div class="rightColumn"><?$note = $notes->GetNote(1);?>
@@ -74,7 +75,7 @@
                     dataType: 'json',
                     url: 'notes/index.php?action=addNote',
                     success: function(jsondata){
-                        $('.notes').prepend('<div class="note"><div class="noteTitle">' + jsondata.title + '</div><div class="shortDescription">' +jsondata.description + '</div></div>');
+                        $('.notes').prepend('<div class="note" id="' + this.id + '"><div class="noteTitle">' + jsondata.title + '</div><div class="shortDescription">' +jsondata.description + '</div></div>');
                         $('.currentNoteTitle').text(jsondata.title);
                         $('.currentNoteDate').text(jsondata.date);
                         $('.currentNoteDescritption').val(jsondata.description);
@@ -99,6 +100,34 @@
                     }
                 });
             });
+
+            function removeGetContentButton(button)
+            {
+                var parent = $(button).parent();
+                var obj = $(button);
+                obj.detach();
+                obj.appendTo(parent);
+            }
+
+            $('#getContent').click(function(){
+                page++;
+                $.ajax({
+                    type: 'POST',
+                    url: "/notes/index.php?action=getNotes&page=" + page,
+                    cache: false,
+                    dataType: 'json',
+                    success: function(jsondata){               
+                        $.each(jsondata, function(index, note) {
+                             $('.notes').append('<div class="note" id="' + note.id + '"><div class="noteTitle">' + note.title + '</div><div class="shortDescription">' + note.description + '</div></div>');
+                        });
+
+                        setTimeout(removeGetContentButton, 10, '#getContent');
+
+                    }
+                });
+                return false;
+            });
+
 
             var timeout;
             $('#ajaxSave').bind('textchange', function () {
@@ -240,6 +269,16 @@
         .leftColumn h1
         {
             float:left;
+        }
+
+        #getContent
+        {
+            text-align: center;
+            padding: 10px;
+            margin: 0 auto;
+            display: block;
+            font-size: 12pt;
+            font-weight: bold;
         }
   </body>
 </html>
