@@ -1,0 +1,12 @@
+AddDefaultCharset UTF-8
+
+RewriteEngine On
+RewriteRule ^js/([a-z0-9\-\_.]+)$ templates/js/$1 [L]
+RewriteRule ^css/([a-z0-9\-\_.]+)$ templates/css//$1 [L]
+RewriteRule ^fonts/([a-z0-9\-\_.]+)$ templates/fonts/$1 [L]
+RewriteRule ^img/([a-z0-9\-\_.]+)$ templates/img/$1 [L]
+
+<IfModule mod_charset.c>
+CharsetSourceEnc utf-8
+CharsetDefault utf-8
+</IfModule>
