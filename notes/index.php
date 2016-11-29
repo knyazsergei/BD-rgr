@@ -17,7 +17,7 @@ class CNotes
 		$notes = mysql_query("
 			SELECT * FROM `notes` 
 			WHERE `author_id`='".mysql_real_escape_string($this->m_userId)."' 
-			ORDER BY `date` ASC
+			ORDER BY `date` DESC
 			LIMIT ".$range[0].",".$range[1]
 		) or die ("<br>Invalid query: " . mysql_error()); ;
 
@@ -64,11 +64,11 @@ class CNotes
 		return $noteId;
 	}
 
-	public function ChangeNoteDescription($id, $description)
+	public function ChangeNote($id, $description, $title)
 	{
 		
 		$query = "UPDATE `notes`
-			SET `description` = '".$description."'
+			SET `description` = '".$description."', `title` = '".$title."'
 			WHERE `id`='".mysql_real_escape_string($id)."'
 		";
 		$result = $this->m_mysqli->query($query);
@@ -110,10 +110,11 @@ if($_GET["action"] == "getNote")
 	echo json_encode(array('title' => $note["title"], 'description' => $note["description"], 'date' => $note["date"]));
 }
 
-if($_GET["action"] == "ChangeNoteDescription")
+if($_GET["action"] == "ChangeNote")
 {
 	$description = $_POST["description"];
-	$note = $notes->ChangeNoteDescription($_GET["id"], $description);
+	$title = $_POST["title"];
+	$note = $notes->ChangeNote($_GET["id"], $description, $title);
 }
 
 if($_GET["action"] == "getNotes")

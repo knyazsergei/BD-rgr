@@ -34,6 +34,7 @@
                 $result = $notes->GetList();
                 $used = false;
                 $noteId = 0;
+                $descriptionSize = 90;
                 while ($note = mysql_fetch_assoc($result))
                 {
                     if(!$used)
@@ -41,9 +42,17 @@
                         $noteId = $note['id'];
                         $used = true;
                     }
+                    $description = $note['description'];
+                    if(strlen($description) >= $descriptionSize)
+                    {
+                        $description = substr($description, 0, $descriptionSize);
+                        $description = rtrim($description, "!,.-");
+                        $description = substr($description, 0, strrpos($description, ' '));
+                        $description = $description."… ";
+                    }
                     echo '<div class="note" id="'.$note['id'].'">
                 <div class="noteTitle">'.$note['title'].'</div>
-                <div class="shortDescription">'.$note['description'].'</div>
+                <div class="shortDescription">'.$description.'</div>
             </div>';
                 }
             ?>
@@ -77,6 +86,7 @@
         $(document).ready(function() {
 
             var currentNoteId = <?=$noteId?>;
+            var currentTitle = "<?=$note['title']?>";
             var page = 0;
 
             $('.addNote').on('click', function(e)
@@ -108,13 +118,14 @@
                         $('.currentNoteDate').text(jsondata.date);
                         $('.currentNoteDescritption').val(jsondata.description);
                         currentNoteId = id;
+                        currentTitle = jsondata.title;
                     }
                 });
             }
 
-            $('.note').on('click', function(e)
+            $('.notes').on('click','div', function(e)
             {
-                Save(currentNoteId);
+               Save(currentNoteId);
                 var id = $(this).attr("id");
                 loadNote(id);
             });
@@ -144,13 +155,14 @@
                 obj.appendTo(parent);
             }
 
-            $('#getContent').click(function(){
+            $('#getContent').on('click', function(e)
+            {
                 page++;
                 $.ajax({
                     type: 'POST',
                     url: "/notes/index.php?action=getNotes&page=" + page,
                     cache: false,
-                    dataType: 'json',
+                        dataType: 'json',
                     success: function(jsondata){               
                         $.each(jsondata, function(index, note) {
                              $('.notes').append('<div class="note" id="' + note.id + '"><div class="noteTitle">' + note.title + '</div><div class="shortDescription">' + note.description + '</div></div>');
@@ -165,9 +177,26 @@
 
             var timeout;
             $('.currentNoteDescritption').bind('textchange', function () {
+                var newText = $('.currentNoteDescritption').val();
+                var size = <?=$descriptionSize?>;
+                if(newText  .length > size)
+                {
+                    newText = newText.slice(0, size) + ' ...';
+                }
+                $('.note[id=' + currentNoteId + '] .shortDescription').text(newText);
+
                 clearTimeout(timeout);
                 var self = this;
                 timeout = setTimeout(Save, 1000, currentNoteId);
+            });
+
+            $('.currentNoteTitle').on('click', function(e)
+            {
+                var title = prompt('Изменить название заметки', currentTitle);
+                currentTitle = title;
+                $(this).text(title); 
+                $('.note[id=' + currentNoteId + '] .currentNoteTitle').text(title);
+                Save(currentNoteId);
             });
 
             function Save(id) {
@@ -175,8 +204,8 @@
                 $.ajax({
                     type: 'POST',
                     dataType: 'json',
-                    data:{description:$('.currentNoteDescritption').val()},
-                    url: 'notes/index.php?action=ChangeNoteDescription&id=' + id ,
+                    data:{description:$('.currentNoteDescritption').val(), title:$('.currentNoteTitle').text()},
+                    url: 'notes/index.php?action=ChangeNote&id=' + id ,
                     success: function(jsondata){
                         $('.currentNoteTitle').text(jsondata.title);
                         $('.currentNoteDate').text(jsondata.date);
