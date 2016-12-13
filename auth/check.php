@@ -7,15 +7,27 @@ if (isset($_COOKIE['id']) and isset($_COOKIE['hash']))
 
 	if(($userdata['hash'] !== $_COOKIE['hash']) || ($userdata['id'] !== $_COOKIE['id'])) 
 	{
+		$authorized = false;
 		setcookie('id', '', time() - 60*24*30*12, '/'); 
 		setcookie('hash', '', time() - 60*24*30*12, '/');
-		header('Location: /auth/login.php');
-		exit();
+		if(!$authPage)
+		{
+			header('Location: /auth/');
+			exit();
+		}
+	}
+	else
+	{
+		$authorized = true;
 	}
 }
 else
 {
-	header('Location: /auth/login.php');
-	exit();
+	$authorized = false;
+	if(!$authPage)
+	{
+		header('Location: /auth/');
+		exit();
+	}
 }
 ?>

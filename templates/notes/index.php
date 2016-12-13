@@ -8,8 +8,9 @@
     <title>Valeo</title>
 
     <!-- Bootstrap -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/jquery.tag-editor.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
     
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -27,7 +28,7 @@
     <div class="main">
         <div class="leftColumn">
         <h1>Notes</h1>
-        <div class="addNote">
+        <div class="addNote" title="Добавить заметку">
             <img src="/img/add.png">
         </div>
         <div class="notes">
@@ -62,18 +63,19 @@
         </div>  
         <div class="rightColumn"><?$note = $notes->GetNote($noteId);?>
             <div class="currentNoteHead">
-                <div class="currentNoteTitle">
-                    <?=$note['title']?>
+                <div style="padding: 5px;">
+                    <div class="currentNoteTitle"><?=$note['title']?></div>
+                    <div class="currentTools">
+                        <a href="#" class="trashNote">
+                            <img src="/img/trash.png" title="Удалить заметку">
+                        </a>
+                    </div> 
+                    <div class="currentNoteDate"><?=$note['date']?></div>
+                    <div class="id" style="display:none"><?=$note['id']?></div>
                 </div>
-                <div class="currentTools">
-                    <a href="#" class="trashNote">
-                        <img src="/img/trash.png">
-                    </a>
-                </div> 
-                <div class="currentNoteDate">
-                    <?=$note['date']?>
+                <div class="tages">
+                    <input type="text" placeholder="Можно добавить метку прямо здесь" class="addTage">
                 </div>
-                <div class="id" style="display:none"><?=$note['id']?></div>
             </div>
             <textarea class="currentNoteDescritption" wrap="off" placeholder="Начни писать прямо здесь! :)"><?=$note['description']?></textarea>
         </div>
@@ -84,6 +86,8 @@
 
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.caret.min.js"></script>
+    <script src="js/jquery.tag-editor.min.js"></script>
     <script src="js/scripts.js"></script>
   </body>
 </html>

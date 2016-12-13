@@ -1,6 +1,7 @@
 <?
 include_once $_SERVER['DOCUMENT_ROOT'].'../config.php'; 
 include_once $_SERVER['DOCUMENT_ROOT'].'../auth/check.php';
+include_once $_SERVER['DOCUMENT_ROOT'].'./tages.php';
 
 class CNotes
 {
@@ -26,9 +27,9 @@ class CNotes
 
 	public function GetNote($id)
 	{
-		$query = "SELECT * FROM `notes` 
+		$sql = "SELECT * FROM `notes` 
 			WHERE `id`='".mysql_real_escape_string($id)."'";
-		$result = $this->m_mysqli->query($query);
+		$result = $this->m_mysqli->query($sql);
 		return $result->fetch_assoc();
 	}
 
@@ -67,11 +68,11 @@ class CNotes
 	public function ChangeNote($id, $description, $title)
 	{
 		
-		$query = "UPDATE `notes`
+		$sql = "UPDATE `notes`
 			SET `description` = '".$description."', `title` = '".$title."'
 			WHERE `id`='".mysql_real_escape_string($id)."'
 		";
-		$result = $this->m_mysqli->query($query);
+		$result = $this->m_mysqli->query($sql);
 		
 		
 	}	

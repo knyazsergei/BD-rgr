@@ -1,5 +1,11 @@
 <?
-include '../config.php'; 
+include $_SERVER['DOCUMENT_ROOT'].'../config.php'; 
+include $_SERVER['DOCUMENT_ROOT'].'../auth/check.php';
+
+if($authorized)
+{
+	header('Location: /index.php');
+}
 
 class Cauthorizer
 {
@@ -12,24 +18,22 @@ class Cauthorizer
 		if(empty($user))
 		{
 			$this->m_error = "Unknown user";
-			echo $this->m_error;
-			return false;
+			return array('result' => false, 'text' => $this->m_error);
 		}
 
 		if(!($user['password'] === md5(md5($password))))
 		{
 			$this->m_error = "Invalid password";
-			echo $this->m_error;
-			return false;
+			return array('result' => false, 'text' => $this->m_error);
 		}
-
+		
 		$hash = md5($this->CodeGenerator(10)); 
 		mysql_query("UPDATE users SET hash='".$hash."' WHERE id='".$user['id']."'") or die("MySQL Error: " . mysql_error()); 
 
 		setcookie("id", $user['id'], time()+60*60*24*30, '/'); 
 		setcookie("hash", $hash, time()+60*60*24*30, '/'); 
-
-		echo "You are logged";
+		
+		return array('result' => true, 'text' => 'complete');
 	}
 
 	private function CodeGenerator($length=6) 
@@ -47,6 +51,9 @@ class Cauthorizer
 	private $m_error = "Unknown error";
 }
 
-$authorizer = new Cauthorizer;
-$authorizer->Check($_GET["login"], $_GET["password"]);
-?> 
+if(!empty($_POST["login"]))
+{
+	$authorizer = new Cauthorizer;
+	$result = $authorizer->Check($_POST["login"],$_POST["password"]);
+	echo json_encode($result);
+}?> 

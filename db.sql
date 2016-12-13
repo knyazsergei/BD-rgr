@@ -19,3 +19,12 @@ CREATE TABLE IF NOT EXISTS `notes` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
 ) DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS `tages` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `word` varchar(255) NOT NULL,
+  `date` date NOT NULL,
+  `count` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id` (`id`)
+) DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
