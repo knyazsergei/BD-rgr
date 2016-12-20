@@ -26,5 +26,13 @@ CREATE TABLE IF NOT EXISTS `tages` (
   `date` date NOT NULL,
   `count` int(11) NOT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `id` (`id`),
+  UNIQUE KEY `word` (`word`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=7 ;
+
+CREATE TABLE IF NOT EXISTS `images` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `image` MEDIUMBLOB NOT NULL,
+  PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
 ) DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;

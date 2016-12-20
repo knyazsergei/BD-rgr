@@ -80,10 +80,10 @@ html, body
 }
 
 
-textarea.currentNoteDescritption 
+textarea.currentNoteDescritption
 {
     width:100%;
-    height:calc( 100% - 65px );
+    height:calc( 100% - 115px );
     border:none;
     box-sizing:border-box;
     padding:25px;
@@ -91,6 +91,33 @@ textarea.currentNoteDescritption
     resize: none;
 }
 
+#images-box 
+{
+    width:100%;
+    height:50px;
+    text-align: center;
+    padding: 10px;
+    position:relative   ;
+}
+#images-box .dz-default
+{
+    position:absolute;
+    width: calc( 100% - 10px );
+    height: calc( 100% - 10px );
+}
+#images-box .dz-default span
+{
+    width:100%;
+}
+
+.dz-preview
+{
+    width: 30px;
+    height: 30px;
+    box-sizing: border-box;
+    overflow: hidden;
+    float: left;
+}
 .currentNoteHead 
 {
     width: 100%;

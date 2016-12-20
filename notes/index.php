@@ -1,7 +1,7 @@
 <?
 include_once $_SERVER['DOCUMENT_ROOT'].'../config.php'; 
 include_once $_SERVER['DOCUMENT_ROOT'].'../auth/check.php';
-include_once $_SERVER['DOCUMENT_ROOT'].'./tages.php';
+include_once $_SERVER['DOCUMENT_ROOT'].'../notes/tages.php';
 
 class CNotes
 {

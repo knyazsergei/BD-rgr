@@ -1,5 +1,6 @@
  $(document).ready(function()
 {
+
     $('.addTage').tagEditor(
     { 
         initialTags: [],
@@ -8,12 +9,21 @@
         forceLowercase: true,
         removeDuplicates: true,
         clickDelete: true,
-        onChange: function(field, editor, tags) {alert(tags)        }
+        animateDelete: 0,
+        onChange: function(field, editor, tags) 
+        {                    
+        }
     });
 
 
     var page = 0;
-    var currentNoteId = $('.id').text();
+    var currentNoteId;
+
+    $(document).ready( loadNote($('.id').text()));
+
+   
+    
+
     $('.addNote').on('click', function(e)
     {
         $(this).animate({opacity: 0.2}, 500 );
@@ -21,7 +31,8 @@
             type: 'POST',
             dataType: 'json',
             url: 'notes/index.php?action=addNote',
-            success: function(jsondata){
+            success: function(jsondata)
+            {
                 $('.notes').prepend('<div class="note" id="' + this.id + '"><div class="noteTitle">' + jsondata.title + '</div><div class="shortDescription">' +jsondata.description + '</div></div>');
                 $('.currentNoteTitle').text(jsondata.title);
                 $('.currentNoteDate').text(jsondata.date);
@@ -40,13 +51,32 @@
                 type: 'POST',
                 dataType: 'json',
                 url: 'notes/index.php?action=getNote&id=' + id ,
-                success: function(jsondata){
+                success: function(jsondata)
+                {
                     $('.currentNoteTitle').text(jsondata.title);
                     $('.currentNoteDate').text(jsondata.date);
                     $('.currentNoteDescritption').val(jsondata.description);
                     currentNoteId = id;
                 }
             });
+
+            var tags = $('.addTage').tagEditor('getTags')[0].tags;
+            for (i = 0; i < tags.length; i++) { $('.addTage').tagEditor('removeTag', tags[i]); }
+            
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                data: {postId:id},
+                url: 'notes/tages.php?action=getTages',
+                success: function(tags)
+                {
+                    for (i = 0; i < tags.length; i++) 
+                    { 
+                        $('.addTage').tagEditor('addTag', tags[i]); 
+                    }
+                }
+            });
+            currentNoteId = id;
         }
     }
 
@@ -89,21 +119,22 @@
             type: 'POST',
             url: "/notes/index.php?action=getNotes&page=" + page,
             cache: false,
-                dataType: 'json',
-            success: function(jsondata){               
-                $.each(jsondata, function(index, note) {
+            dataType: 'json',
+            success: function(jsondata)
+            {        
+                $.each(jsondata, function(index, note) 
+                {
                      $('.notes').append('<div class="note" id="' + note.id + '"><div class="noteTitle">' + note.title + '</div><div class="shortDescription">' + note.description + '</div></div>');
                 });
-
                 setTimeout(removeGetContentButton, 10, '#getContent');
-
             }
         });
         return false;
     });
 
     var timeout;
-    $('.currentNoteDescritption').bind('textchange', function () {
+    $('.currentNoteDescritption').bind('textchange', function () 
+    {
         var newText = $('.currentNoteDescritption').val();
         var size = 90;
         if(newText  .length > size)
@@ -135,11 +166,30 @@
             dataType: 'json',
             data:{description:$('.currentNoteDescritption').val(), title:$('.currentNoteTitle').text()},
             url: 'notes/index.php?action=ChangeNote&id=' + id ,
-            success: function(jsondata){
+            success: function(jsondata)
+            {
                 $('.currentNoteTitle').text(jsondata.title);
                 $('.currentNoteDate').text(jsondata.date);
                 $('.currentNoteDescritption').val(jsondata.description);
             }
         });
+
+         $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url: 'notes/tages.php?action=update',
+            data:{tages:$('.addTage').val(), postId:id},
+            success: function(jsondata)
+            {
+            
+            }
+        });
     }
+
+
+
+
+    //image upload
+    $("images-box").dropzone({ url: "/notes/uploadImage.php" });
+
 });

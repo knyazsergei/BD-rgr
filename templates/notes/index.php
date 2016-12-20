@@ -78,6 +78,13 @@
                 </div>
             </div>
             <textarea class="currentNoteDescritption" wrap="off" placeholder="Начни писать прямо здесь! :)"><?=$note['description']?></textarea>
+            <div class="images">
+                    <form action="/notes/uploadImage.php" class="dropzone" id="images-box">
+                        <div class="fallback">
+                            <input name="file" type="file" multiple />
+                        </div>
+                    </form>
+            </div>
         </div>
     </div>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
@@ -89,5 +96,6 @@
     <script src="js/jquery.caret.min.js"></script>
     <script src="js/jquery.tag-editor.min.js"></script>
     <script src="js/scripts.js"></script>
+    <script src="/js/dropzone.js"></script>
   </body>
 </html>
