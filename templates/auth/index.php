@@ -29,13 +29,16 @@
         <div class="card card-container">
         <h2 class='login_title text-center'>Авторизация</h2>
         <hr>
-            <form class="form-signin" id="loginForm" method="post">
+            <form class="form-signin" id="loginForm" method="post" action="/auth/login.php">
                 <span id="reauth-email" class="reauth-email"></span>
                 <p class="input_title">Логин</p>
                 <input type="text" id="inputEmail" name="login" class="login_box" placeholder="" required autofocus>
                 <p class="input_title">Пароль</p>
                 <input type="password" name="password" class="login_box inputPassword" placeholder="******" required>
                 <div id="remember" class="checkbox">
+                    <label>
+                        <a href="/auth/index.php?action=register">Регистрация</a>
+                    </label>
                     <label>
                         <a href="#">Забыли пароль?</a>
                     </label>

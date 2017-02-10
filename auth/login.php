@@ -1,11 +1,7 @@
 <?
+$authPage = true;
 include $_SERVER['DOCUMENT_ROOT'].'../config.php'; 
 include $_SERVER['DOCUMENT_ROOT'].'../auth/check.php';
-
-if($authorized)
-{
-	header('Location: /index.php');
-}
 
 class Cauthorizer
 {
@@ -32,7 +28,6 @@ class Cauthorizer
 
 		setcookie("id", $user['id'], time()+60*60*24*30, '/'); 
 		setcookie("hash", $hash, time()+60*60*24*30, '/'); 
-		
 		return array('result' => true, 'text' => 'complete');
 	}
 
@@ -53,7 +48,8 @@ class Cauthorizer
 
 if(!empty($_POST["login"]))
 {
+	
 	$authorizer = new Cauthorizer;
 	$result = $authorizer->Check($_POST["login"],$_POST["password"]);
 	echo json_encode($result);
-}?> 
+}

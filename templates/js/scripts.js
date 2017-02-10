@@ -39,8 +39,10 @@
                 $('.currentNoteDescritption').val(jsondata.description);
                 $(this).animate({opacity: 1}, 500 );
                 currentNoteId = jsondata.id;
+                $(".rightColumn").show();
             }
         });
+
     });
 
     function loadNote(id)
@@ -98,8 +100,13 @@
                 success: function(){
                     var id = $('.notes').children().first().attr("id");
                     loadNote(id);
+                    if($(".notes > div").children().length == 0)
+                    {
+                        $(".rightColumn").hide();
+                    }
                 }
             });
+
         }
     });
     
@@ -112,7 +119,7 @@
         obj.appendTo(parent);
     }
 
-    $('#getContent').on('click', function(e)
+    function GetContent()
     {
         page++;
         $.ajax({
@@ -127,9 +134,24 @@
                      $('.notes').append('<div class="note" id="' + note.id + '"><div class="noteTitle">' + note.title + '</div><div class="shortDescription">' + note.description + '</div></div>');
                 });
                 setTimeout(removeGetContentButton, 10, '#getContent');
+                return true;
             }
         });
         return false;
+    }
+    function start()
+    {
+        page--;
+        if(GetContent() && $(".notes > div").children().length != 0)
+        {
+            loadNote($(".notes div:first-child").attr("id"));
+        }
+    }
+    start();
+
+    $('#getContent').on('click', function(e)
+    {
+       GetContent();
     });
 
     var timeout;
@@ -190,6 +212,21 @@
 
 
     //image upload
-    $("images-box").dropzone({ url: "/notes/uploadImage.php" });
+    $("#images-box").dropzone({  
+        init: function() {
 
+            var thisDropzone = this;
+
+            $.getJSON('/notes/getItemImages.php?noteId=' + $('.id').text(), function(data) 
+            { // get the json response
+
+                $.each(data, function(key,value)
+                { //loop through it
+                    var mockFile = { name: value.name, size: value.size }; // here we get the file name and size as response 
+                    thisDropzone.options.addedfile.call(thisDropzone, mockFile);
+                    thisDropzone.options.thumbnail.call(thisDropzone, mockFile, "notes/uploads/"+value.name);//uploadsfolder is the folder where you have all those uploaded files
+                });
+            });
+        } 
+    });
 });

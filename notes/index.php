@@ -11,6 +11,13 @@ class CNotes
 		$this->m_mysqli = $mysqli;
 	}
 
+	public function LastId()
+	{
+		$result = $this->m_mysqli->query("SELECT MAX(id) FROM `notes` WHERE `author_id`='".mysql_real_escape_string($this->m_userId)."'");
+		$row = $result->fetch_row();
+		return $row[0];
+	}
+
 	public function GetList($page = 0)
 	{
 		$range[0] = $page * $this->m_numberNotesPage;
@@ -33,6 +40,12 @@ class CNotes
 		return $result->fetch_assoc();
 	}
 
+	public function GetCount()
+	{
+		$result = $this->m_mysqli->query("SELECT COUNT(*) FROM `notes` WHERE `author_id`='".mysql_real_escape_string($this->m_userId)."'");
+		$row = $result->fetch_row();
+		return $row[0];
+	}
 
 	public function AddNote($noteData)
 	{
@@ -73,8 +86,6 @@ class CNotes
 			WHERE `id`='".mysql_real_escape_string($id)."'
 		";
 		$result = $this->m_mysqli->query($sql);
-		
-		
 	}	
 
 	public function Remove($id)

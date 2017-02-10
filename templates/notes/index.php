@@ -21,18 +21,32 @@
   </head>
   <body>
     <div class="head">
-        <div class="logo">
+        <div class="head-items">
+        </div>
+        <div class="logo head-items">
             Valeo
+        </div>
+        <div class="profile head-items">
+        <ul class="menu">
+            <li><a href=#><?=$userName?><img src="<?=$avatar?>" /></a>
+                <ul class="submenu">
+                    <li><a href=#>Помощь</a></li>
+                    <li><a href=#>Настройки</a></li>
+                    <li><a href=/auth/logout.php>Выход</a></li>
+                </ul>
+            </li>
+        </ul>
         </div>
     </div>
     <div class="main">
         <div class="leftColumn">
         <h1>Notes</h1>
         <div class="addNote" title="Добавить заметку">
-            <img src="/img/add.png">
+            <img src="/img/add.png" />
         </div>
         <div class="notes">
-            <?
+        <?if($notes->GetCount() > 0):?>
+            <?/*
                 $result = $notes->GetList();
                 $used = false;
                 $noteId = 0;
@@ -56,12 +70,14 @@
                 <div class="noteTitle">'.$note['title'].'</div>
                 <div class="shortDescription">'.$description.'</div>
             </div>';
-                }
+                }*/
             ?>
             <a href="#" id="getContent">Загрузить заметки</a>
+            <?endif?>
         </div>
         </div>  
-        <div class="rightColumn"><?$note = $notes->GetNote($noteId);?>
+        <div class="rightColumn">
+            <?$note = $notes->GetNote($notes->LastId());?>
             <div class="currentNoteHead">
                 <div style="padding: 5px;">
                     <div class="currentNoteTitle"><?=$note['title']?></div>
@@ -77,9 +93,9 @@
                     <input type="text" placeholder="Можно добавить метку прямо здесь" class="addTage">
                 </div>
             </div>
-            <textarea class="currentNoteDescritption" wrap="off" placeholder="Начни писать прямо здесь! :)"><?=$note['description']?></textarea>
+            <textarea class="currentNoteDescritption" wrap="sof"t placeholder="Начни писать прямо здесь! :)"><?=$note['description']?></textarea>
             <div class="images">
-                    <form action="/notes/uploadImage.php" class="dropzone" id="images-box">
+                    <form action="/notes/uploadImage.php?noteId=<?=$note['id']?>" class="dropzone" id="images-box">
                         <div class="fallback">
                             <input name="file" type="file" multiple />
                         </div>
@@ -95,7 +111,8 @@
     <script src="js/bootstrap.min.js"></script>
     <script src="js/jquery.caret.min.js"></script>
     <script src="js/jquery.tag-editor.min.js"></script>
-    <script src="js/scripts.js"></script>
     <script src="/js/dropzone.js"></script>
+    <script src="js/scripts.js"></script>
+    
   </body>
 </html>

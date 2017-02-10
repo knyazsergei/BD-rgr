@@ -1,3 +1,4 @@
+
 $(function(){
     $('#register').submit(function()
     {
@@ -24,7 +25,7 @@ $(function(){
 
     $('#loginForm').submit(function()
     {
-       $.ajax(
+        $.ajax(
         {
             type: 'POST',
             dataType: 'json',
@@ -32,6 +33,7 @@ $(function(){
             data: $(this).serialize(),
             success: function(jsondata)
             {
+                console.log(jsondata);
                 if(jsondata.result)
                 {
                     window.location = "/";
