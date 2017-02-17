@@ -20,17 +20,50 @@ class CNotes
 
 	public function GetList($page = 0)
 	{
+		$sql = "SELECT `sortingDir` FROM `users` WHERE `id`='".mysql_real_escape_string($this->m_userId)."'";
+		$result = $this->m_mysqli->query($sql);
+		$direction = $result->fetch_row();
+
 		$range[0] = $page * $this->m_numberNotesPage;
 		$range[1] = ($page + 1) * $this->m_numberNotesPage;
-		$notes = mysql_query("
-			SELECT * FROM `notes` 
-			WHERE `author_id`='".mysql_real_escape_string($this->m_userId)."' 
-			ORDER BY `id` DESC
-			LIMIT ".$range[0].",".$range[1]
-		) or die ("<br>Invalid query: " . mysql_error()); ;
 
-		return $notes;
+		$sql = "SELECT * FROM `notes` 
+			WHERE `author_id`='".mysql_real_escape_string($this->m_userId)."' 
+			ORDER BY `id` ".$direction[0]."
+			LIMIT ".$range[0].",".$range[1];
+		$result = $this->m_mysqli->query($sql);
+		
+		while ($row = $result->fetch_assoc()) {
+        	$final[] = $row;
+    	}
+
+		return $final;
 	}
+
+
+	public function SearchNotes($page = 0, $q)
+	{
+		$sql = "SELECT `sortingDir` FROM `users` WHERE `id`='".mysql_real_escape_string($this->m_userId)."'";
+		$result = $this->m_mysqli->query($sql);
+		$direction = $result->fetch_row();
+
+		$range[0] = $page * $this->m_numberNotesPage;
+		$range[1] = ($page + 1) * $this->m_numberNotesPage;
+
+		$sql = "SELECT * FROM `notes` 
+			WHERE `author_id`='".mysql_real_escape_string($this->m_userId)."' AND 
+			`title` LIKE '%".mysql_real_escape_string($q)."%'
+			ORDER BY `id` ".$direction[0]."
+			LIMIT ".$range[0].",".$range[1];
+		$result = $this->m_mysqli->query($sql);
+		
+		while ($row = $result->fetch_assoc()) {
+        	$final[] = $row;
+    	}
+
+		return $final;
+	}
+
 
 	public function GetNote($id)
 	{
@@ -81,10 +114,11 @@ class CNotes
 	{
 		
 		$sql = "UPDATE `notes`
-			SET `description` = '".$description."', `title` = '".$title."'
+			SET `description` = '".mysql_real_escape_string($description)."', `title` = '".mysql_real_escape_string($title)."'
 			WHERE `id`='".mysql_real_escape_string($id)."'
 		";
 		$result = $this->m_mysqli->query($sql);
+		echo "xer";
 	}	
 
 	public function Remove($id)
@@ -125,24 +159,45 @@ if($_GET["action"] == "ChangeNote")
 {
 	$description = $_POST["description"];
 	$title = $_POST["title"];
-	$note = $notes->ChangeNote($_GET["id"], $description, $title);
+	$id = $_POST["id"];
+	$result = $notes->ChangeNote($id, $description, $title);
+	echo json_encode($result);
+}
+
+if($_GET["action"] == "searchNotes")
+{
+	$page = $_GET["page"];
+	$q = $_POST["q"];
+	$result = $notes->SearchNotes($page, $q);
+
+	echo json_encode($result);
 }
 
 if($_GET["action"] == "getNotes")
 {
 	$page = $_GET["page"];
-	$note = $notes->GetList($page);
-
-	$result = array();
-	for($i = 0; $i < mysql_num_rows($note);$i++)
-	{
-		$result[] = mysql_fetch_array($note, MYSQL_ASSOC );
+	$result = $notes->GetList($page);
+	for ($i = 0; $i < count($result); $i++) {
+		if(strlen($result[$i]["description"]) > 150)
+		{
+			$string = $result[$i]["description"];
+			$string = substr($string, 0, 147);
+			$string = rtrim($string, "!,.-");
+			$string = substr($string, 0, strrpos($string, ' '));
+			$string = $string."...";
+			$result[$i]["description"] = $string;
+		}
 	}
-	
 	echo json_encode($result);
 }
+
 if($_GET["action"] == "remove")
 {
 	$notes->Remove($_GET["id"]);
+}
+if($_GET["action"] == "getCount")
+{
+	$result = $notes->GetCount();
+	echo json_encode($result);
 }
 ?>

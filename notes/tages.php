@@ -14,22 +14,26 @@ class CTages
 	{
 
 		$tagesArr = explode(',', $allTages);
+		$tagesInBd = $this->GetTages($postId);
+		$removed = array_diff($tagesInBd, $tagesArr);
+		
+		$added = array_diff($tagesArr, $tagesInBd);
 
-		$tages = array();
-		foreach ($tagesArr as $tage)
-		{
-			
-			$id = $this->GetTageId($tage);
-			if(!in_array($id , $tages))
-			{
-				$tages[] = $id ;
-			}
+		foreach ($added as $word) {
+			$this->AddTage($word, $postId);
 		}
-		$resultArr = implode(',', $tages);
 
-		$sql = "UPDATE `notes`
-			SET `tages` = '".$resultArr."'
-			WHERE `id`='".mysql_real_escape_string($postId)."'
+		foreach ($removed as $word) {
+			$this->RemoveTage($word, $postId);
+		}
+
+	}
+
+	function RemoveTage($word, $postId)
+	{
+		$sql = "
+			DELETE FROM `tages` 
+			WHERE `word`='".$word."' AND `note_id` = '".$postId."' 
 		";
 		$result = $this->m_mysqli->query($sql);
 	}
@@ -37,18 +41,19 @@ class CTages
 	function GetTages($postId)
 	{
 		$sql = "
-			SELECT `tages` FROM `notes` 
-			WHERE `id`='".mysql_real_escape_string($postId)."'
+			SELECT `word` FROM `tages` 
+			WHERE `note_id`='".mysql_real_escape_string($postId)."'
 		";
 		$result = $this->m_mysqli->query($sql);
-		$result = $result->fetch_assoc();
-		$tagesArr = explode(',', $result["tages"]);
+		$result = $result->fetch_all();
+		$endResult = array();
 
-		foreach ($tagesArr as $tageId)
+		for($i = 0; $i < count($result);$i++)
 		{
-			$tages[] = $this->GetTageById($tageId);
+			$endResult[] = $result[$i][0];
 		}
-		return $tages;
+
+		return $endResult;
 	}
 
 	function GetTageId($word)
@@ -72,14 +77,14 @@ class CTages
 		return $result["word"];
 	}
 
-	private function AddTage($word)
+	private function AddTage($word, $postId)
 	{
 		$sql = "INSERT INTO tages SET word='".$word."', 
-			count='0', 
+			note_id='".$postId."', 
 			date=CURRENT_TIMESTAMP;
 		";
 
-		$sql .= "SELECT MAX(id) FROM notes;";
+		$sql .= "SELECT MAX(id) FROM tages;";
 		
 		if(!$this->m_mysqli->multi_query($sql))
 		{
@@ -146,7 +151,7 @@ if($_GET["action"] == "getTages")
 {
 	if(!empty($_POST["postId"]))
 	{
-		$tagesArr = $tages->GetTages($_POST["postId"]);
+		$tagesArr = $tages->GetTages($_POST	["postId"]);
 		echo json_encode($tagesArr);
 	}
 }

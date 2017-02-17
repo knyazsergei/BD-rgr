@@ -46,6 +46,7 @@ html, body
 }
 .leftColumn
 {
+    min-width: 300px;
     width:calc(25% - 1px);
     height:100%;
     float:left;
@@ -67,7 +68,7 @@ html, body
 .notes
 {
     width:100%;
-    height:calc(100% - 86px);
+    height:calc(100% - 144px);
     clear:both;
     overflow-y: scroll;
 }
@@ -239,4 +240,59 @@ ul.submenu > li > a:hover {
 }
 ul.menu > li:hover > ul.submenu {
     display: block;
+}
+
+/* search form */
+
+.search 
+{
+  width: 100%;
+  position: relative;
+  margin-bottom:0px;
+}
+
+.searchTerm 
+{
+    outline: none;
+    border: none;
+    padding: 5px;
+    width: calc( 100% - 32px );
+    height:32px;
+    box-sizing: border-box;
+}
+
+.searchButton 
+{
+    float: right;
+    width: 32px;
+    height: 32px;
+    border: none;
+    outline: 0;
+    box-sizing: border-box;
+}
+
+footer
+{
+    height:32px;
+    width:100%;
+}
+
+#reverse img
+{
+    width: 20px;
+    height: 20px;
+    float: right;
+    margin: 6px;
+}
+
+#count
+{
+    float:left;
+    padding:8px;
+}
+
+.saveNote img
+{
+    width: 16px;
+    height: 16px;
 }

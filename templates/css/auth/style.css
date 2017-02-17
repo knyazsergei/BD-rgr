@@ -1,4 +1,7 @@
-
+.head
+{
+ display: block;   
+}
 .login_box{
     background:#f7f7f7;
     border:3px solid #F4F4F4;

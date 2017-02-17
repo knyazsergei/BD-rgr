@@ -1,49 +1,53 @@
  $(document).ready(function()
 {
-
-    $('.addTage').tagEditor(
-    { 
-        initialTags: [],
-        delimiter: ', ', /* space and comma */
-        placeholder: 'Добавить метки ...',
-        forceLowercase: true,
-        removeDuplicates: true,
-        clickDelete: true,
-        animateDelete: 0,
-        onChange: function(field, editor, tags) 
-        {                    
-        }
-    });
-
-
+    var timeout;
     var page = 0;
-    var currentNoteId;
+    var currentNoteId = 0;
+    var currentNoteTitle = "";
+    var currentNoteDescritption = "";
+    var myDropZone;
 
-    $(document).ready( loadNote($('.id').text()));
+    $(document).ready(InitApp());
 
-   
-    
-
-    $('.addNote').on('click', function(e)
+    function InitApp()
     {
-        $(this).animate({opacity: 0.2}, 500 );
-        $.ajax({
-            type: 'POST',
-            dataType: 'json',
-            url: 'notes/index.php?action=addNote',
-            success: function(jsondata)
+        //load note
+        page--;
+    
+        GetNotes(function(){
+            if($(".notes > div").children().length != 0)
             {
-                $('.notes').prepend('<div class="note" id="' + this.id + '"><div class="noteTitle">' + jsondata.title + '</div><div class="shortDescription">' +jsondata.description + '</div></div>');
-                $('.currentNoteTitle').text(jsondata.title);
-                $('.currentNoteDate').text(jsondata.date);
-                $('.currentNoteDescritption').val(jsondata.description);
-                $(this).animate({opacity: 1}, 500 );
-                currentNoteId = jsondata.id;
-                $(".rightColumn").show();
+                currentNoteId = $(".notes div:first-child").parent().attr("id"); 
+                var id = currentNoteId;
+                currentNoteId = currentNoteId - 1;
+                loadNote(id);
             }
         });
 
-    });
+        //tages
+        $('.addTage').tagEditor(
+        { 
+            initialTags: $('.addTage').val(),
+            delimiter: ', ',
+            placeholder: 'Добавить метки ...',
+            forceLowercase: true,
+            removeDuplicates: true,
+            clickDelete: true,
+            animateDelete: 0
+        });   
+
+        //init images 
+        //image upload
+        myDropZone = $("#images-box").dropzone({
+            addRemoveLinks: true, 
+            init: function() { 
+                if(currentNoteId != 0)
+                {
+                    LoadImages(currentNoteId, this);
+                }
+            } 
+        });
+    }
 
     function loadNote(id)
     {
@@ -55,38 +59,52 @@
                 url: 'notes/index.php?action=getNote&id=' + id ,
                 success: function(jsondata)
                 {
+                    currentNoteTitle = jsondata.title;
+                    currentNoteDescritption = jsondata.description;
                     $('.currentNoteTitle').text(jsondata.title);
                     $('.currentNoteDate').text(jsondata.date);
                     $('.currentNoteDescritption').val(jsondata.description);
-                    currentNoteId = id;
-                }
-            });
 
-            var tags = $('.addTage').tagEditor('getTags')[0].tags;
-            for (i = 0; i < tags.length; i++) { $('.addTage').tagEditor('removeTag', tags[i]); }
-            
-            $.ajax({
-                type: 'POST',
-                dataType: 'json',
-                data: {postId:id},
-                url: 'notes/tages.php?action=getTages',
-                success: function(tags)
-                {
-                    for (i = 0; i < tags.length; i++) 
-                    { 
-                        $('.addTage').tagEditor('addTag', tags[i]); 
-                    }
+
+                    //update tages
+                    var tags = $('.addTage').tagEditor('getTags')[0].tags;
+                    for (i = 0; i < tags.length; i++) { $('.addTage').tagEditor('removeTag', tags[i]); }
+
+                    $.ajax({
+                        type: 'POST',
+                        dataType: 'json',
+                        data: {postId:id},
+                        url: 'notes/tages.php?action=getTages',
+                        success: function(tags)
+                        {
+                            for (i = 0; i < tags.length; i++) 
+                            {
+                                $('.addTage').tagEditor('addTag', tags[i]); 
+                            }
+                            currentNoteId = id;
+                            LoadImages(currentNoteId, myDropZone);
+                            console.log("note loaded: " + id);
+                            return true;
+                        }
+                    });
                 }
             });
-            currentNoteId = id;
         }
+        return false;
     }
 
     $('.notes').on('click','.note', function(e)
     {
-       Save(currentNoteId);
+        Save(currentNoteId);
         var id = $(this).attr("id");
+        console.log("choose: " + id);
+        $('#id').text(id);
         loadNote(id);
+    });
+
+    $('.saveNote').on('click', function(e)
+    {
+        Save(currentNoteId);
     });
 
     $('.trashNote').on('click', function(e)
@@ -94,6 +112,7 @@
         var accuratelyRemove = confirm("Вы уверены, что хотите удалить данную заметку?");
         if(accuratelyRemove)
         {
+            loadCount();
             $('.note[id=' + currentNoteId + ']').remove();
             $.ajax({
                 url: 'notes/index.php?action=remove&id=' + currentNoteId,
@@ -119,55 +138,36 @@
         obj.appendTo(parent);
     }
 
-    function GetNotes()
+    function GetNotes(callback)
     {
+        loadCount();
         page++;
+
         $.ajax({
             type: 'POST',
             url: "/notes/index.php?action=getNotes&page=" + page,
-            cache: false,
             dataType: 'json',
             success: function(jsondata)
-            {        
+            {
+                console.log("Notes loaded");
                 $.each(jsondata, function(index, note) 
                 {
-                     $('.notes').append('<div class="note" id="' + note.id + '"><div class="noteTitle">' + note.title + '</div><div class="shortDescription">' + note.description + '</div></div>');
+                    var description = note.description;
+                    if(description.length>200) {
+                        var description = description.substr(0,197)+'...';
+                    }
+                     $('.notes').append('<div class="note" id="' + note.id + '"><div class="noteTitle">' + note.title + '</div><div class="shortDescription">' + description + '</div></div>');
                 });
                 setTimeout(removeGetContentButton, 10, '#getContent');
-                return true;
+                callback();
             }
         });
-        return false;
     }
-    function start()
-    {
-        page--;
-        if(GetNotes() && $(".notes > div").children().length != 0)
-        {
-            loadNote($(".notes div:first-child").attr("id"));
-        }
-    }
-    start();
+
 
     $('#getContent').on('click', function(e)
     {
        GetNotes();
-    });
-
-    var timeout;
-    $('.currentNoteDescritption').bind('textchange', function () 
-    {
-        var newText = $('.currentNoteDescritption').val();
-        var size = 90;
-        if(newText  .length > size)
-        {
-            newText = newText.slice(0, size) + ' ...';
-        }
-        $('.note[id=' + currentNoteId + '] .shortDescription').text(newText);
-
-        clearTimeout(timeout);
-        var self = this;
-        timeout = setTimeout(Save, 1000, currentNoteId);
     });
 
     $('.currentNoteTitle').on('click', function(e)
@@ -181,44 +181,48 @@
         }
     });
 
-    function Save(id) {
-        clearTimeout(timeout);
-        $.ajax({
-            type: 'POST',
-            dataType: 'json',
-            data:{description:$('.currentNoteDescritption').val(), title:$('.currentNoteTitle').text()},
-            url: 'notes/index.php?action=ChangeNote&id=' + id ,
-            success: function(jsondata)
-            {
-                $('.currentNoteTitle').text(jsondata.title);
-                $('.currentNoteDate').text(jsondata.date);
-                $('.currentNoteDescritption').val(jsondata.description);
-            }
-        });
 
-         $.ajax({
+    function Save(id) {
+        if(currentNoteTitle != $('.currentNoteTitle').text() || currentNoteDescritption != $('.currentNoteDate').text())
+        {
+            console.log("Preparing to save: " + id);
+            //save note
+            var description = $('.currentNoteDescritption').val();
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                data:{description:description, title:$('.currentNoteTitle').text(), id:id},
+                url: 'notes/index.php?action=ChangeNote',
+                success: function(jsondata)
+                {
+                    console.log("note saved: " + id + " " + jsondata);
+                    SaveTages(id)
+                }
+            });
+        }
+    }
+
+
+    function SaveTages(id)
+    {
+        //save tages
+        $.ajax({
             type: 'POST',
             dataType: 'json',
             url: 'notes/tages.php?action=update',
             data:{tages:$('.addTage').val(), postId:id},
             success: function(jsondata)
             {
-            
+                return true;
             }
-        });
+        });  
+        return false;
     }
-
-
-
-
-    //image upload
-    $("#images-box").dropzone({  
-        init: function() {
-
-            var thisDropzone = this;
-
-            $.getJSON('/notes/getItemImages.php?noteId=' + $('.id').text(), function(data) 
-            { // get the json response
+    
+    function LoadImages(id, thisDropzone)
+    {
+        $.getJSON('/notes/getItemImages.php?noteId=' + id, function(data) 
+        { // get the json response
 
                 $.each(data, function(key,value)
                 { //loop through it
@@ -227,6 +231,97 @@
                     thisDropzone.options.thumbnail.call(thisDropzone, mockFile, "notes/uploads/"+value.name);//uploadsfolder is the folder where you have all those uploaded files
                 });
             });
-        } 
+    }
+
+    function SetDirectSortingOrder()
+    {
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url: 'profile/index.php?action=setDSortingOrder'
+        });  
+    }
+
+    $('.addNote').on('click', function(e)
+    {
+        $(this).animate({opacity: 0.2}, 500 );
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url: 'notes/index.php?action=addNote',
+            success: function(jsondata)
+            {
+                $('.notes').prepend('<div class="note" id="' + this.id + '"><div class="noteTitle">' + jsondata.title + '</div><div class="shortDescription">' +jsondata.description + '</div></div>');
+                $('.currentNoteTitle').text(jsondata.title);
+                $('.currentNoteDate').text(jsondata.date);
+                $('.currentNoteDescritption').val(jsondata.description);
+                $(this).animate({opacity: 1}, 500 );
+                currentNoteId = jsondata.id;
+                $(".rightColumn").show();
+            }
+        });
+        loadCount();
+
     });
+
+    $('#reverse').click(function()
+    {
+        $(".notes").empty();
+        page = -1;
+        SetDirectSortingOrder();
+        GetNotes();
+        return false;
+    });
+
+/*
+    $(".searchTerm").keyup(function() {
+        $('#contenInput').text($(".searchTerm").val()); 
+    });
+*/
+    $('.searchButton').click(function()
+    {
+        $(".notes").empty();
+        page = -1;
+        Search($(".searchTerm").val());
+        return false;
+    });
+
+  function loadCount()
+    {
+        $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: 'notes/index.php?action=getCount',
+                success: function(count)
+                {
+                    $("#count span").html(count);
+                }
+            });
+    }
+
+    function Search(quary)
+    {
+        console.log(quary);
+        loadCount();
+        page++;
+        $.ajax({
+            type: 'POST',
+            url: "/notes/index.php?action=searchNotes&page=" + page,
+            cache: false,
+            dataType: 'json',
+            data:{q:quary},
+            success: function(jsondata)
+            {        
+                $.each(jsondata, function(index, note) 
+                {
+                     $('.notes').append('<div class="note" id="' + note.id + '"><div class="noteTitle">' + note.title + '</div><div class="shortDescription">' + note.description + '</div></div>');
+                });
+                setTimeout(removeGetContentButton, 10, '#getContent');
+                return true;
+            }
+        });
+
+        return false;
+    }
+    
 });

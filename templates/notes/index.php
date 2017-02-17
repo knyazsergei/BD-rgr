@@ -44,37 +44,16 @@
         <div class="addNote" title="Добавить заметку">
             <img src="/img/add.png" />
         </div>
+        <form method="POST" class="search">
+            <input name="q" type="search" placeholder="Serach line..." class="searchTerm" />
+            <input type="submit" value="S" class="searchButton" />
+        </form>
         <div class="notes">
-        <?if($notes->GetCount() > 0):?>
-            <?/*
-                $result = $notes->GetList();
-                $used = false;
-                $noteId = 0;
-                $descriptionSize = 90;
-                while ($note = mysql_fetch_assoc($result))
-                {
-                    if(!$used)
-                    {
-                        $noteId = $note['id'];
-                        $used = true;
-                    }
-                    $description = $note['description'];
-                    if(strlen($description) >= $descriptionSize)
-                    {
-                        $description = substr($description, 0, $descriptionSize);
-                        $description = rtrim($description, "!,.-");
-                        $description = substr($description, 0, strrpos($description, ' '));
-                        $description = $description."… ";
-                    }
-                    echo '<div class="note" id="'.$note['id'].'">
-                <div class="noteTitle">'.$note['title'].'</div>
-                <div class="shortDescription">'.$description.'</div>
-            </div>';
-                }*/
-            ?>
+        <?if($notes->GetCount() > 5):?>
             <a href="#" id="getContent">Загрузить заметки</a>
-            <?endif?>
+        <?endif?>
         </div>
+        <footer><div id="count">Count:<span>0</span></div><a href="#" id="reverse"><img src="/img/reverse.svg"></a></footer>
         </div>  
         <div class="rightColumn">
             <?$note = $notes->GetNote($notes->LastId());?>
@@ -85,15 +64,23 @@
                         <a href="#" class="trashNote">
                             <img src="/img/trash.png" title="Удалить заметку">
                         </a>
+                        <a href="#" class="saveNote">
+                            <img src="/img/save.svg" title="Сохранить заметку">
+                        </a>
                     </div> 
                     <div class="currentNoteDate"><?=$note['date']?></div>
-                    <div class="id" style="display:none"><?=$note['id']?></div>
+                    <div id="id" style="display:none"><?=$note['id']?></div>
                 </div>
                 <div class="tages">
-                    <input type="text" placeholder="Можно добавить метку прямо здесь" class="addTage">
+                    <input type="text" placeholder="Можно добавить метку прямо здесь" class="addTage" text="<?
+                        $arrTages = $tages->GetTages($note['id']);
+                        foreach ($arrTages as $word) {
+                            echo $word.',';
+                        }
+                    ?>">
                 </div>
             </div>
-            <textarea class="currentNoteDescritption" wrap="soft" placeholder="Начни писать прямо здесь! :)"><?=$note['description']?></textarea>
+            <textarea class="currentNoteDescritption" wrap="soft" placeholder="Начни писать прямо здесь! :)"><?/*=$note['description']*/?></textarea>
             <div class="images">
                     <form action="/notes/uploadImage.php?noteId=<?=$note['id']?>" class="dropzone" id="images-box">
                         <div class="fallback">
