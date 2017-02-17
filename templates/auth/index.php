@@ -32,7 +32,7 @@
             <form class="form-signin" id="loginForm" method="post" action="/auth/login.php">
                 <span id="reauth-email" class="reauth-email"></span>
                 <p class="input_title">Логин</p>
-                <input type="text" id="inputEmail" name="login" class="login_box" placeholder="" required autofocus>
+                <input type="text" id="inputEmail" name="login" class="login_box" placeholder="" pattern="[a-zA-Z0-9]{3,64}" required autofocus>
                 <p class="input_title">Пароль</p>
                 <input type="password" name="password" class="login_box inputPassword" placeholder="******" required>
                 <div id="remember" class="checkbox">

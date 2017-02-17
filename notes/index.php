@@ -25,7 +25,7 @@ class CNotes
 		$notes = mysql_query("
 			SELECT * FROM `notes` 
 			WHERE `author_id`='".mysql_real_escape_string($this->m_userId)."' 
-			ORDER BY `date` DESC
+			ORDER BY `id` DESC
 			LIMIT ".$range[0].",".$range[1]
 		) or die ("<br>Invalid query: " . mysql_error()); ;
 
@@ -54,7 +54,6 @@ class CNotes
 		$sql = "INSERT INTO notes SET title='".$noteData["title"]."', 
 			description='".$noteData["description"]."', 
 			video='".$noteData["video"]."',
-			picture='".$noteData["picture"]."',
 			author_id='".$noteData["author_id"]."',
 			date=CURRENT_TIMESTAMP;";
 		$sql .= "SELECT MAX(id) FROM notes;";

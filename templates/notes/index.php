@@ -93,7 +93,7 @@
                     <input type="text" placeholder="Можно добавить метку прямо здесь" class="addTage">
                 </div>
             </div>
-            <textarea class="currentNoteDescritption" wrap="sof"t placeholder="Начни писать прямо здесь! :)"><?=$note['description']?></textarea>
+            <textarea class="currentNoteDescritption" wrap="soft" placeholder="Начни писать прямо здесь! :)"><?=$note['description']?></textarea>
             <div class="images">
                     <form action="/notes/uploadImage.php?noteId=<?=$note['id']?>" class="dropzone" id="images-box">
                         <div class="fallback">

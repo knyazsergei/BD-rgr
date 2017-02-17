@@ -119,7 +119,7 @@
         obj.appendTo(parent);
     }
 
-    function GetContent()
+    function GetNotes()
     {
         page++;
         $.ajax({
@@ -142,7 +142,7 @@
     function start()
     {
         page--;
-        if(GetContent() && $(".notes > div").children().length != 0)
+        if(GetNotes() && $(".notes > div").children().length != 0)
         {
             loadNote($(".notes div:first-child").attr("id"));
         }
@@ -151,7 +151,7 @@
 
     $('#getContent').on('click', function(e)
     {
-       GetContent();
+       GetNotes();
     });
 
     var timeout;
