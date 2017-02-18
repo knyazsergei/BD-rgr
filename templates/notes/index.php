@@ -8,8 +8,10 @@
     <title>Valeo</title>
 
     <!-- Bootstrap -->
+    <link href="/css/normalize.css" rel="stylesheet">
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/jquery.tag-editor.css" rel="stylesheet">
+    <link href="/css/jquery.modal.css" rel="stylesheet">
     <link href="/css/style.css" rel="stylesheet">
     
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -30,8 +32,8 @@
         <ul class="menu">
             <li><a href=#><?=$userName?><img src="<?=$avatar?>" /></a>
                 <ul class="submenu">
-                    <li><a href=#>Помощь</a></li>
-                    <li><a href=#>Настройки</a></li>
+                    <li><a href="#" id="helpWindow">Помощь</a></li>
+                    <li><a href="#" id="settingsWindow">Настройки</a></li>
                     <li><a href=/auth/logout.php>Выход</a></li>
                 </ul>
             </li>
@@ -82,11 +84,13 @@
             </div>
             <textarea class="currentNoteDescritption" wrap="soft" placeholder="Начни писать прямо здесь! :)"><?/*=$note['description']*/?></textarea>
             <div class="images">
-                    <form action="/notes/uploadImage.php?noteId=<?=$note['id']?>" class="dropzone" id="images-box">
+                    <?/*<form action="/notes/uploadImage.php?noteId=<?=$note['id']?>" class="dropzone" id="imageZone">
                         <div class="fallback">
                             <input name="file" type="file" multiple />
                         </div>
-                    </form>
+                    </form>*/?>
+                    <div class="previewImage">
+                    </div>
             </div>
         </div>
     </div>
@@ -98,7 +102,8 @@
     <script src="js/bootstrap.min.js"></script>
     <script src="js/jquery.caret.min.js"></script>
     <script src="js/jquery.tag-editor.min.js"></script>
-    <script src="/js/dropzone.js"></script>
+    <script src="js/dropzone.js"></script>
+    <script src="js/jquery.modal.min.js"></script>
     <script src="js/scripts.js"></script>
     
   </body>

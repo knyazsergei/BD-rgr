@@ -5,12 +5,17 @@
     var currentNoteId = 0;
     var currentNoteTitle = "";
     var currentNoteDescritption = "";
+    var currentNoteTages = "";
     var myDropZone;
+    var imageCleaner;
+
+    var searchUsed = false;
 
     $(document).ready(InitApp());
 
     function InitApp()
     {
+
         //load note
         page--;
     
@@ -21,6 +26,61 @@
                 var id = currentNoteId;
                 currentNoteId = currentNoteId - 1;
                 loadNote(id);
+                LoadImages(currentNoteId, this);
+                
+                //init images
+                $("div.images").dropzone({ 
+                    url: "/notes/uploadImage.php?noteId=" + id, 
+                    maxFilesize: 5,
+                    maxFile: 10,
+                    addRemoveLinks: true,
+                    autoDiscover: false,
+                    dictResponseError: 'Server not Configured',
+                    acceptedFiles: ".png,.jpg,.gif,.bmp,.jpeg",
+                    previewsContainer: ".previewImage",
+                    dictDefaultMessage: "drop here your image",
+                    init:function()
+                    {
+                        myDropZone = this;
+                        myDropZone.options.dictRemoveFile = "x";
+
+                        var imageCleaner2 = function () {
+                            myDropZone.removeAllFiles();
+                        };
+                        imageCleaner = imageCleaner2;
+                    },
+                    removedfile: function(file) 
+                    {
+                        var name = file.name;
+                         console.log("remove name");
+                        $.ajax({
+                            type: 'POST',
+                            url: 'notes/Images.php?action=removeImage',
+                            dataType: 'json',
+                            data:{name:name}
+                        });
+                        var _ref;
+                        return (_ref = file.previewElement) != null ? _ref.parentNode.removeChild(file.previewElement) : void 0;        
+
+                    }
+                });
+                /*
+                myDropZone = $("#imageZone").dropzone({
+                    autoDiscover: false,
+                    init: function(){
+                        $.getJSON(url, function(data) 
+                        {
+                            $.each(data, function(index, val) 
+                            {
+                                var mockFile = { name: val.name, size: val.size };
+                                dz.options.addedfile.call(dz, mockFile);
+                                dz.options.thumbnail.call(dz, mockFile, "/notes/uploads/" + val.name);
+                            });
+                        });
+                        //LoadImages(currentNoteId, this);
+                    }
+                });
+                */
             }
         });
 
@@ -36,18 +96,26 @@
             animateDelete: 0
         });   
 
-        //init images 
-        //image upload
-        myDropZone = $("#images-box").dropzone({
-            addRemoveLinks: true, 
-            init: function() { 
-                if(currentNoteId != 0)
-                {
-                    LoadImages(currentNoteId, this);
-                }
-            } 
+        document.onkeydown = function(e) 
+        {
+            if ((e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) && $(".currentNoteDescritption").is( ":focus" )) 
+            {
+                Save(currentNoteId);
+                return false;
+            }
+        }
+
+        $( ".currentNoteDescritption" ).blur(function() {
+            Save(currentNoteId);
         });
+
+        window.onbeforeunload = function (event) 
+        {
+            Save(currentNoteId);
+        }
+
     }
+
 
     function loadNote(id)
     {
@@ -81,10 +149,10 @@
                             {
                                 $('.addTage').tagEditor('addTag', tags[i]); 
                             }
+                            currentNoteTages = tags;
                             currentNoteId = id;
                             LoadImages(currentNoteId, myDropZone);
                             console.log("note loaded: " + id);
-                            return true;
                         }
                     });
                 }
@@ -105,6 +173,7 @@
     $('.saveNote').on('click', function(e)
     {
         Save(currentNoteId);
+        return false;
     });
 
     $('.trashNote').on('click', function(e)
@@ -172,65 +241,103 @@
 
     $('.currentNoteTitle').on('click', function(e)
     {
+        /*
+        modal({
+                type: 'prompt',
+                title: 'Изменение названия заметки',
+                text: 'Введите новое название:',
+                callback: function(title) {
+                    if(title != null)
+                    {
+                        $(this).text(title); 
+                        $('.note[id=' + currentNoteId + ']').children('.noteTitle').text(title);
+                        Save(currentNoteId);
+                    }
+                }
+            });
+        */
         var title = prompt('Изменить название заметки', $(this).text());
         if(title != null)
-        {
-            $(this).text(title); 
-            $('.note[id=' + currentNoteId + ']').children('.noteTitle').text(title);
-            Save(currentNoteId);
-        }
+                    {
+                        $(this).text(title); 
+                        $('.note[id=' + currentNoteId + ']').children('.noteTitle').text(title);
+                        Save(currentNoteId);
+                    }
+       
     });
 
 
     function Save(id) {
-        if(currentNoteTitle != $('.currentNoteTitle').text() || currentNoteDescritption != $('.currentNoteDate').text())
+        var title = $('.currentNoteTitle').text();
+        var description = $('.currentNoteDescritption').val();
+
+        if(currentNoteTitle != title || currentNoteDescritption != description)
         {
             console.log("Preparing to save: " + id);
             //save note
-            var description = $('.currentNoteDescritption').val();
-            $.ajax({
+                $.ajax({
                 type: 'POST',
                 dataType: 'json',
                 data:{description:description, title:$('.currentNoteTitle').text(), id:id},
                 url: 'notes/index.php?action=ChangeNote',
                 success: function(jsondata)
                 {
-                    console.log("note saved: " + id + " " + jsondata);
-                    SaveTages(id)
+                    console.log(jsondata.date);
+                    currentNoteTitle = title;
+                    currentNoteDescritption = description;
+                    if(currentNoteId == id)
+                    {
+                        $(".currentNoteDate").text(jsondata.date);
+                    }
+                    console.log("note saved: " + id + " " + jsondata.date);
                 }
             });
         }
+        SaveTages(id);
     }
 
 
     function SaveTages(id)
     {
         //save tages
-        $.ajax({
-            type: 'POST',
-            dataType: 'json',
-            url: 'notes/tages.php?action=update',
-            data:{tages:$('.addTage').val(), postId:id},
-            success: function(jsondata)
-            {
-                return true;
-            }
-        });  
-        return false;
+        var tages = $('.addTage').val();
+        if(currentNoteTages != tages)
+        {
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: 'notes/tages.php?action=update',
+                data:{tages: tages, postId:id},
+                success: function(jsondata)
+                {
+                    console.log("tages saved");
+                },
+                complete:function(jsondata)
+                {
+                    console.log(jsondata);            
+                }
+            });  
+        }
     }
     
     function LoadImages(id, thisDropzone)
     {
-        $.getJSON('/notes/getItemImages.php?noteId=' + id, function(data) 
-        { // get the json response
+        var url = '/notes/Images.php?action=getImage&noteId=' + id;
+        console.log(url);
 
-                $.each(data, function(key,value)
-                { //loop through it
-                    var mockFile = { name: value.name, size: value.size }; // here we get the file name and size as response 
-                    thisDropzone.options.addedfile.call(thisDropzone, mockFile);
-                    thisDropzone.options.thumbnail.call(thisDropzone, mockFile, "notes/uploads/"+value.name);//uploadsfolder is the folder where you have all those uploaded files
-                });
+        $(".dz-preview").remove();
+
+        $.getJSON(url, function(data) 
+        {
+            $.each(data, function(index, val) 
+            {
+                var mockFile = { name: val.name, size: val.size, status: 'success'  };
+                var filePath = "/notes/uploads/" + val.name;
+                thisDropzone.emit("addedfile", mockFile);
+                thisDropzone.emit("thumbnail", mockFile, filePath); 
+                thisDropzone.files.push( mockFile ); 
             });
+        });
     }
 
     function SetDirectSortingOrder()
@@ -238,38 +345,49 @@
         $.ajax({
             type: 'POST',
             dataType: 'json',
-            url: 'profile/index.php?action=setDSortingOrder'
+            url: 'profile/index.php?action=setDSortingOrder',
+            complete:function()
+            {
+                if(searchUsed)
+                {
+                    Search($(".searchTerm").val());
+                }
+                else
+                {
+                    GetNotes();
+                }
+            }
         });  
     }
 
-    $('.addNote').on('click', function(e)
+    function AddNote()
     {
-        $(this).animate({opacity: 0.2}, 500 );
         $.ajax({
             type: 'POST',
             dataType: 'json',
             url: 'notes/index.php?action=addNote',
             success: function(jsondata)
             {
-                $('.notes').prepend('<div class="note" id="' + this.id + '"><div class="noteTitle">' + jsondata.title + '</div><div class="shortDescription">' +jsondata.description + '</div></div>');
-                $('.currentNoteTitle').text(jsondata.title);
-                $('.currentNoteDate').text(jsondata.date);
-                $('.currentNoteDescritption').val(jsondata.description);
-                $(this).animate({opacity: 1}, 500 );
-                currentNoteId = jsondata.id;
-                $(".rightColumn").show();
+                console.log("added: " + jsondata.id);
+                $('.notes').prepend('<div class="note" id="' + jsondata.id + '"><div class="noteTitle">' + jsondata.title + '</div><div class="shortDescription">' +jsondata.description + '</div></div>');
+                loadNote(jsondata.id);
             }
         });
         loadCount();
+    }
 
+    $('.addNote').on('click', function(e)
+    {
+        AddNote();
     });
+
+
 
     $('#reverse').click(function()
     {
         $(".notes").empty();
         page = -1;
         SetDirectSortingOrder();
-        GetNotes();
         return false;
     });
 
@@ -280,13 +398,11 @@
 */
     $('.searchButton').click(function()
     {
-        $(".notes").empty();
-        page = -1;
         Search($(".searchTerm").val());
         return false;
     });
 
-  function loadCount()
+    function loadCount()
     {
         $.ajax({
                 type: 'POST',
@@ -301,7 +417,8 @@
 
     function Search(quary)
     {
-        console.log(quary);
+        $(".notes").empty();
+        page = -1;
         loadCount();
         page++;
         $.ajax({
@@ -312,6 +429,7 @@
             data:{q:quary},
             success: function(jsondata)
             {        
+                searchUsed = true;
                 $.each(jsondata, function(index, note) 
                 {
                      $('.notes').append('<div class="note" id="' + note.id + '"><div class="noteTitle">' + note.title + '</div><div class="shortDescription">' + note.description + '</div></div>');
@@ -323,5 +441,34 @@
 
         return false;
     }
-    
+
+
+    $('.previewImage').on('click','.dz-image', function(e)
+    {
+        url = $(this).children("img").attr("src");
+
+        modal({
+            type: 'primary',
+            title: 'Image',
+            text: '<img src="' + url + '" class="modalImage"/ >',
+        });
+    });
+
+        $('a#helpWindow').click(function() {
+            modal({
+                type: 'primary',
+                title: 'Help',
+                text: 'To download a photo, transfer photos from your computer to the bottom panel of the site.',
+            });
+        });
+
+        $('a#settingsWindow').click(function() {
+            modal({
+                type: 'alert',
+                title: 'Error',
+                text: 'Section of the website is under construction',
+            });
+        });
+
+
 });

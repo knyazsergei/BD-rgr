@@ -26,7 +26,7 @@ class CTages
 		foreach ($removed as $word) {
 			$this->RemoveTage($word, $postId);
 		}
-
+		return true;
 	}
 
 	function RemoveTage($word, $postId)
@@ -137,13 +137,14 @@ if($_GET["action"] == "update")
 {
 	if(empty($_POST["tages"])||empty($_POST["postId"]))
 	{
-
+		echo json_encode(false);
 	}
 	else
 	{
 		$allTages = $_POST["tages"];
 		$postId = $_POST["postId"];
 		$tages->Update($allTages, $postId);
+		echo json_encode(true);
 	}
 }
 

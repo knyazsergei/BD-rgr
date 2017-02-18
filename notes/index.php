@@ -29,13 +29,27 @@ class CNotes
 
 		$sql = "SELECT * FROM `notes` 
 			WHERE `author_id`='".mysql_real_escape_string($this->m_userId)."' 
-			ORDER BY `id` ".$direction[0]."
+			ORDER BY `date` ".$direction[0]."
 			LIMIT ".$range[0].",".$range[1];
 		$result = $this->m_mysqli->query($sql);
 		
-		while ($row = $result->fetch_assoc()) {
+		while ($row = $result->fetch_assoc()) 
+		{
         	$final[] = $row;
     	}
+
+    	for ($i = 0; $i < count($final); $i++) 
+    	{
+			if(strlen($final[$i]["description"]) > 150)
+			{
+				$string = $final[$i]["description"];
+				$string = substr($string, 0, 147);
+				$string = rtrim($string, "!,.-");
+				$string = substr($string, 0, strrpos($string, ' '));
+				$string = $string."...";
+				$final[$i]["description"] = $string;
+			}
+		}
 
 		return $final;
 	}
@@ -60,6 +74,19 @@ class CNotes
 		while ($row = $result->fetch_assoc()) {
         	$final[] = $row;
     	}
+
+    	for ($i = 0; $i < count($final); $i++) 
+    	{
+			if(strlen($final[$i]["description"]) > 150)
+			{
+				$string = $final[$i]["description"];
+				$string = substr($string, 0, 147);
+				$string = rtrim($string, "!,.-");
+				$string = substr($string, 0, strrpos($string, ' '));
+				$string = $string."...";
+				$final[$i]["description"] = $string;
+			}
+		}
 
 		return $final;
 	}
@@ -89,7 +116,7 @@ class CNotes
 			video='".$noteData["video"]."',
 			author_id='".$noteData["author_id"]."',
 			date=CURRENT_TIMESTAMP;";
-		$sql .= "SELECT MAX(id) FROM notes;";
+		$sql .= "SELECT MAX(id) FROM notes WHERE author_id = '".$noteData["author_id"]."';";
 		
 		if(!$this->m_mysqli->multi_query($sql))
 		{
@@ -114,11 +141,14 @@ class CNotes
 	{
 		
 		$sql = "UPDATE `notes`
-			SET `description` = '".mysql_real_escape_string($description)."', `title` = '".mysql_real_escape_string($title)."'
+			SET `description` = '".mysql_real_escape_string($description)."', `title` = '".mysql_real_escape_string($title)."', `date` = CURRENT_TIMESTAMP
 			WHERE `id`='".mysql_real_escape_string($id)."'
 		";
+		$this->m_mysqli->query($sql);
+
+		$sql = "SELECT date FROM `notes` WHERE `id`='".mysql_real_escape_string($id)."'";
 		$result = $this->m_mysqli->query($sql);
-		echo "xer";
+		return $result->fetch_assoc();
 	}	
 
 	public function Remove($id)
@@ -134,7 +164,7 @@ class CNotes
 	private $m_mysqli;
 }
 
-$notes = new CNotes($_COOKIE['id' ], $mysqli);
+$notes = new CNotes($_COOKIE['id'], $mysqli);
 
 if($_GET["action"] == "addNote")
 {
@@ -147,7 +177,7 @@ if($_GET["action"] == "addNote")
 	$noteId = $notes->AddNote($noteData);
 	$note = $notes->GetNote($noteId);
 
-	echo json_encode(array('title' => $note["title"], 'description' => $note["description"], 'date' => $note["date"], 'id' => $noteId));
+	echo json_encode(array('title' => $note["title"], 'description' => $note["description"], 'date' => $note["date"], 'id' => $note["id"]));
 }
 if($_GET["action"] == "getNote")
 {
@@ -161,7 +191,7 @@ if($_GET["action"] == "ChangeNote")
 	$title = $_POST["title"];
 	$id = $_POST["id"];
 	$result = $notes->ChangeNote($id, $description, $title);
-	echo json_encode($result);
+	echo json_encode(array('date' => $result["date"]));
 }
 
 if($_GET["action"] == "searchNotes")
@@ -177,17 +207,7 @@ if($_GET["action"] == "getNotes")
 {
 	$page = $_GET["page"];
 	$result = $notes->GetList($page);
-	for ($i = 0; $i < count($result); $i++) {
-		if(strlen($result[$i]["description"]) > 150)
-		{
-			$string = $result[$i]["description"];
-			$string = substr($string, 0, 147);
-			$string = rtrim($string, "!,.-");
-			$string = substr($string, 0, strrpos($string, ' '));
-			$string = $string."...";
-			$result[$i]["description"] = $string;
-		}
-	}
+	
 	echo json_encode($result);
 }
 
